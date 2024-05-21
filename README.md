@@ -1,27 +1,50 @@
-Sistema de Reconocimiento e Identificación de Voz
+README
+# Voice Identification
 
-Introducción
+This is a python project for the computer vision subject of computer science career of Universitat Autonoma de Barcelona
 
-Este proyecto tiene como objetivo diseñar e implementar un sistema de reconocimiento e identificación de voz para cuatro personas específicas. El sistema utilizará técnicas de procesamiento de señales de audio y aprendizaje automático para reconocer y distinguir las voces de las personas autorizadas.
+## Introduction
 
-El proceso de desarrollo constará de varias etapas clave:
+The voice identification project is made for a real problem, our group has been working in a robot that need a voice identification module.
+This module is not test in real conditions, is only a first model for our robot.
 
-Recopilación de Datos: Se recopilarán muestras de voz de las cuatro personas de interés, abarcando una variedad de palabras y frases relevantes para el contexto de uso previsto.
-Preprocesamiento de Datos: Se extraerán características acústicas relevantes de las muestras de voz, como tono, intensidad y frecuencia.
-Entrenamiento del Modelo: Se utilizarán algoritmos de aprendizaje automático para entrenar un modelo de reconocimiento de voz. Durante el entrenamiento, el modelo aprenderá a asociar las características acústicas de las muestras de voz con las identidades de las cuatro personas.
-Evaluación y Ajuste Fino: Se probará el sistema utilizando conjuntos de datos adicionales que no se utilizaron durante el entrenamiento, con el fin de evaluar su precisión y rendimiento en la identificación de las cuatro personas. Se realizarán ajustes en el modelo según sea necesario para mejorar su capacidad de reconocimiento y reducir posibles errores.
-Datos
+## Methods
 
-Recopilaremos muestras de voz de cada uno de los usuarios a identificar mediante el modelo, 50 audios del tipo "hola, qué tal?" para cada uno de los usuarios a identificar, adicionalmente añadiremos 100 muestras de audio de usuarios diferentes a identificar. Por lo tanto, contaremos con un total de 300 audios.
+The [notebook](PROYECTOS/main.ipynb) is a complete description of the proyect, in the module [file](PROYECTOS/voiceindent.py) we have put all the functions to preprocess and predict a audio file.
 
-id	id_mensaje	audio	id_persona
-int (0 -> 299)	int (01 -> 50)	str (path)	int (0 -> 5)
-Instalación
+### Models
 
-Para ejecutar este proyecto, necesitarás tener instalado Python y las siguientes bibliotecas:
+We have made some models that are explained in the [notebook](PROYECTOS/main.ipynb), all of there are saved in the modelos directory, if each one of you wants to train a model, you must load some audios and follow all the instructions of [notebook](PROYECTOS/main.ipynb).
 
-pip install -r requeriments.txt
+### Predict and backtest
+
+The predict functions it could be correct to make a backtest of all the models made. 
+`y_pred, clase_mayoritaria = predict(
+    algorithm='windowing', 
+    dataType='ruido', 
+    model='rf', 
+    filter=True, 
+    audio='tu_archivo.mp3'
+)`
+There is more info in the [notebook](PROYECTOS/main.ipynb)
+Other form to test an audio file is doing: 
+`python PROYECTO/voideident.py --algorithm specsModel --dataType ruidoNorm --model cnn --filter True --audio path/to/audio.mp3
+`
+All the combinations possibles there are explained in the [notebook](PROYECTOS/main.ipynb)
 
 
-Para ejecutar el proyecto, simplemente abre y ejecuta el notebook main.ipynb en Jupyter Notebook o JupyterLab. El notebook contiene todas las celdas necesarias para preprocesar los datos, entrenar el modelo y evaluar su rendimiento.
+## Installation
 
+1. Clone the repository: `git clone https://github.com/albertceballos0/UAB-VC-voice-identification.git`
+2. Navigate to the project directory: `cd PROYECTO`
+3. Install all the python dependencies: `pip install -r requeriments.txt`
+
+
+## Contributing
+
+Contributions are welcome! If you find any issues or have suggestions for improvement, please open an issue or submit a pull request.
+We are gratefull to recive new featrues. Please submit a new pull request.
+
+## License
+
+This project is made only for educational intention.

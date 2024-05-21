@@ -30,7 +30,7 @@ The predict functions it could be correct to make a backtest of all the models m
 There is more info in the [notebook](PROYECTO/main.ipynb)
 Other form to test an audio file is doing: 
 
-`python PROYECTO/voideident.py --algorithm specsModel --dataType ruidoNorm --model cnn --filter True --audio path/to/audio.mp3
+`python PROYECTO/voiceident.py --algorithm specsModel --dataType ruidoNorm --model cnn --filter True --audio path/to/audio.mp3
 `
 
 All the combinations possibles there are explained in the [notebook](PROYECTO/main.ipynb)

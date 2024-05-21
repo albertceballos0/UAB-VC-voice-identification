@@ -1,8 +1,8 @@
-
 import numpy as np
 import librosa
 import joblib
 import os
+import argparse
 
 
 
@@ -263,6 +263,7 @@ def extract_features(y, sr):
     
     return features
 
+
 def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, audio='aux.mp3'):
     """
     Predicts the output based on the given parameters.
@@ -282,13 +283,15 @@ def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, 
     - ValueError: If the combination of algorithm, dataType, and model is not supported.
 
     """
-    if os.path.exists(audio) == False: return -1    
+    if not os.path.exists(audio):
+        return -1
+    
     if algorithm == 'windowing':
+        if model != 'rf':
+            return -1
         
-        if model != 'rf': return -1
-        
-        m = joblib.load(f'./modelos/{dataType}/{algorithm}/modelos/{model}_{algorithm}_filter_{str(filter)}.pkl')
-        scaler = joblib.load(f'./modelos/{dataType}/{algorithm}/scalers/scaler_{algorithm}_filter_{str(filter)}.pkl')
+        m = joblib.load(f'./modelos/{dataType}/{algorithm}/modelos/{model}_{algorithm}_filter_{str(filter)}_comprimido.joblibl')
+        scaler = joblib.load(f'./modelos/{dataType}/{algorithm}/scalers/scaler_{algorithm}_filter_{str(filter)}_comprimido.joblib')
         
         y, sr = librosa.load(audio)
         
@@ -298,35 +301,22 @@ def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, 
             y = apply_compression(y)
         
         y = lowPassFilter(y, sr)
-
         y = removeSilence(y, 0.01)
-                        
         image = spec(y, sr, spec='mel')
-
-        windows = windowing(image, 320, despl = 0)
-
-
+        windows = windowing(image, 320, despl=0)
         X = windows[np.mean(windows, axis=1) != 0]
-
-
         X = scaler.transform(X)
-
-
         y_pred = m.predict(X)
-
         y_pred = np.array(y_pred)
-
-
         return y_pred, np.bincount(y_pred).argmax()
     
     if algorithm == 'specsModel':
-        
-        if filter == True and dataType == 'ruidoNorm': return -1
-        if model != 'cnn': return -1
+        if filter and dataType == 'ruidoNorm':
+            return -1
+        if model != 'cnn':
+            return -1
         
         model = joblib.load(f'./modelos/{dataType}/{algorithm}/modelos/cnn_{algorithm}_filter_{str(filter)}.pkl')
-        
-        
         y, sr = librosa.load(audio)
         
         if dataType == 'ruidoNorm':
@@ -334,18 +324,12 @@ def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, 
             y = normalize_audio(y, average_rms)
             y = apply_compression(y)
         
-
         y = removeSilence(y, 0.01)
-
         y = lowPassFilter(y, sr)
-                                           
         y, sr = extrapolate_audio(y, sr, 6)
-                        
         image = spec(y, sr, spec='wavelet')
-
-        if dataType == 'original': size = 32
-        elif dataType == 'ruido': size = 128
-        else: size = 256
+        
+        size = {'original': 32, 'ruido': 128, 'ruidoNorm': 256}[dataType]
         
         test = np.zeros((size, image.shape[0], image.shape[1]))
         test[0] = image
@@ -353,13 +337,11 @@ def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, 
         return y_pred[0]
     
     if algorithm == 'featureModel':
-        
-        if model not in ['svc', 'lr' ,'rf']: return -1
+        if model not in ['svc', 'lr', 'rf']:
+            return -1
         
         model = joblib.load(f'./modelos/{dataType}/{algorithm}/modelos/{model}_{algorithm}_filter_{str(filter)}.pkl')
         scaler = joblib.load(f'./modelos/{dataType}/{algorithm}/scalers/scaler_{algorithm}_filter_{str(filter)}.pkl')
-        
-        
         y, sr = librosa.load(audio)
         
         if dataType == 'ruidoNorm':
@@ -369,11 +351,20 @@ def predict(algorithm='windowing', dataType='ruido', model='svm', filter=False, 
         
         y = lowPassFilter(y, sr)
         y = removeSilence(y, 0.02)
-        
         features = extract_features(y, sr)
         features = np.array(features).reshape(1, -1)
-        
         features = scaler.transform(features)
         y_pred = model.predict(features)
         return y_pred[0]
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Predict output from audio file.')
+    parser.add_argument('--algorithm', type=str, default='windowing', help='Algorithm to use for prediction (default: windowing)')
+    parser.add_argument('--dataType', type=str, default='ruido', help='Type of data to use for prediction (default: ruido)')
+    parser.add_argument('--model', type=str, default='svm', help='Model to use for prediction (default: svm)')
+    parser.add_argument('--filter', type=bool, default=False, help='Whether to apply a filter or not (default: False)')
+    parser.add_argument('--audio', type=str, default='aux.mp3', help='Path to the audio file (default: aux.mp3)')
+    args = parser.parse_args()
+
+    result = predict(algorithm=args.algorithm, dataType=args.dataType, model=args.model, filter=args.filter, audio=args.audio)
+    print(f'Prediction result: {result}')
